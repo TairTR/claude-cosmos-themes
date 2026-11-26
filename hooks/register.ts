@@ -131,9 +131,23 @@ export const register: Register = on => {
     const set = await setLook($, current)
     if (!set.isDrawn) $.ui.status(set.reason)
     else if (isCosmos(current)) $.ui.status(statusLine(now))
-    // keep the simulated date in the status line fresh
-    $.clock.every(5000, async () => {
-      if (isCosmos(current)) $.ui.status(statusLine(await $.clock.now()))
+    // Every few seconds: follow a scene or speed chosen in another chat (the
+    // store is shared by every session), and keep the status line's date fresh.
+    $.clock.every(4000, async () => {
+      const now = await $.clock.now()
+      const scene = await $.store.get('scene')
+      if (typeof scene === 'string' && scene !== current && (SCENES as string[]).includes(scene)) {
+        current = scene as SceneId
+        await setLook($, current)
+        $.ui.invalidate('ui.render')
+        if (!isCosmos(current)) $.ui.status(undefined)
+      }
+      const year = await $.store.get('yearSec')
+      if (typeof year === 'number' && year !== yearSec && year >= 2 && year <= REAL) {
+        setSpeed(now, year)
+        $.ui.invalidate('ui.render')
+      }
+      if (isCosmos(current)) $.ui.status(statusLine(now))
     })
 
     return next(e)
