@@ -1,0 +1,5 @@
+{
+  "name": "claude-cosmos-themes",
+  "owner": { "name": "TairTR" },
+  "plugins": [{ "name": "tair-temy", "source": "./" }]
+}
